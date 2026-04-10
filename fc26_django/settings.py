@@ -38,6 +38,14 @@ DEBUG = _env_bool('DJANGO_DEBUG', '1')
 
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
 
+# Vercel preview/prod domains support
+vercel_url = os.environ.get('VERCEL_URL', '').strip()
+if vercel_url:
+    ALLOWED_HOSTS.append(vercel_url)
+if '.vercel.app' not in ALLOWED_HOSTS:
+    # Allow all Vercel deployment subdomains (preview + production aliases).
+    ALLOWED_HOSTS.append('.vercel.app')
+
 
 # Application definition
 
