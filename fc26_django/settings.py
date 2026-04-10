@@ -230,12 +230,22 @@ if ROBOKASSA_TEST:
 # Кэш: при REDIS_URL — Redis (общий для воркеров, Django 4.0+), иначе LocMem (dev).
 REDIS_URL = os.environ.get('REDIS_URL', '').strip()
 if REDIS_URL:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': REDIS_URL,
-        },
-    }
+    try:
+        import redis  # noqa: F401
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                'LOCATION': REDIS_URL,
+            },
+        }
+    except ImportError:
+        # На случай, если REDIS_URL задан, но пакет redis не установлен (например, на build-этапе)
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+                'OPTIONS': {'MAX_ENTRIES': 500},
+            },
+        }
 else:
     CACHES = {
         'default': {
