@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% block title %}PRO подписка — без рекламы и полный доступ | FC Arena{% endblock %}
+{% block content %}
+<style>
+    .sub-page { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+    .sub-page h1 { text-align: center; margin-bottom: 0.5rem; font-size: 2rem; font-family: 'Rajdhani', sans-serif; font-weight: 700; }
+    .sub-page .sub-lead { text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.1rem; line-height: 1.5; }
+    .sub-page .sub-cta { text-align: center; margin-bottom: 2rem; }
+    .sub-page .sub-cta .price-big { font-size: 2.5rem; font-weight: 800; color: var(--accent-green); text-shadow: 0 0 20px rgba(52, 211, 153, 0.4); }
+    .sub-tabs { display: flex; gap: 0; margin-bottom: 1.5rem; background: rgba(30, 41, 59, 0.6); border-radius: 10px; padding: 4px; max-width: 280px; margin-left: auto; margin-right: auto; }
+    .sub-tabs button { flex: 1; padding: 0.6rem 1rem; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+    .sub-tabs button:hover { color: white; }
+    .sub-tabs button.active { background: var(--accent-green); color: #0f172a; }
+    .sub-plan-wrap { display: none; }
+    .sub-plan-wrap.active { display: block; }
+    .sub-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 700px) { .sub-cards { grid-template-columns: 1fr; } }
+    .sub-card { background: rgba(30, 41, 59, 0.5); border-radius: 12px; border: 1px solid var(--border-color); padding: 1.5rem; }
+    .sub-card.highlight { border-color: var(--accent-green); box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15); }
+    .sub-card.free { border-color: var(--border-color); }
+    .sub-card h2 { margin: 0 0 0.5rem; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+    .sub-card .price { font-size: 1.75rem; font-weight: 700; color: var(--accent-green); margin: 0.5rem 0; }
+    .sub-card .price-note { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; }
+    .sub-card .tag { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .sub-card .tag-free { background: rgba(148, 163, 184, 0.2); color: var(--text-secondary); }
+    .sub-card .tag-pro { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); }
+    .sub-card .tag-save { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); }
+    .sub-features { list-style: none; padding: 0; margin: 0 0 1.25rem; }
+    .sub-features li { padding: 0.4rem 0; display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); }
+    .sub-features li .icon { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; }
+    .sub-features li.yes { color: #e2e8f0; }
+    .sub-features li.no { opacity: 0.7; }
+    .sub-card .btn-wrap { margin-top: 1rem; }
+    .sub-card .btn-wrap .btn { width: 100%; }
+    .sub-info { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary); }
+    .sub-info a { color: var(--accent-green); }
+    .sub-trust { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin: 1.5rem 0; padding: 1rem; background: rgba(30, 41, 59, 0.5); border-radius: 12px; border: 1px solid rgba(51, 65, 85, 0.5); }
+    .sub-trust-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); }
+    .sub-trust-item svg { flex-shrink: 0; color: var(--accent-green); }
+    .sub-payment-fail { margin-bottom: 1.5rem; padding: 1rem 1.25rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; color: #fca5a5; }
+    .sub-payment-fail-title { font-weight: 600; margin-bottom: 0.5rem; }
+    .sub-payment-fail .btn { margin-top: 0.75rem; }
+</style>
+<div class="sub-page">
+    {% if payment_fail %}
+    <div class="sub-payment-fail" id="subPaymentFailBlock">
+        <p class="sub-payment-fail-title">Оплата не прошла</p>
+        <p style="margin: 0; font-size: 0.9rem;">Попробуйте снова или выберите другой способ оплаты ниже.</p>
+        <a href="#plan-month" class="btn btn-primary">Повторить оплату</a>
+    </div>
+    {% endif %}
+    <h1>PRO — полный доступ к турнирам</h1>
+    <p class="sub-lead">Без рекламы, история турниров, публичные страницы побед и продвинутая генерация команд. От $6/мес.</p>
+    <div class="sub-cta">
+        <span class="price-big">$6</span><span style="color: var(--text-secondary); font-size: 1.25rem;">/месяц</span>
+        <span style="margin: 0 1rem; color: var(--border-color);">или</span>
+        <span class="price-big">$55</span><span style="color: var(--text-secondary); font-size: 1.25rem;">/год</span>
+        <span style="display: inline-block; margin-left: 0.5rem; padding: 0.2rem 0.5rem; background: rgba(52, 211, 153, 0.2); border-radius: 6px; font-size: 0.85rem; color: var(--accent-green); font-weight: 600;">−24%</span>
+    </div>
+
+    <div class="sub-tabs" role="tablist">
+        <button type="button" role="tab" id="tab-month" aria-selected="true" class="active">Месяц</button>
+        <button type="button" role="tab" id="tab-year" aria-selected="false">Год</button>
+    </div>
+
+    <div id="plan-month" class="sub-plan-wrap active" role="tabpanel">
+        <div class="sub-cards">
+            <div class="sub-card free">
+                <span class="tag tag-free">Бесплатно</span>
+                <h2><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Бесплатный тариф</h2>
+                <p class="price">$0</p>
+                <p class="price-note">Навсегда. Базовые возможности для игры.</p>
+                <ul class="sub-features">
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Один игровой профиль</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Базовая статистика</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Участие в турнирах</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Генерация команд (базовый режим)</li>
+                    <li class="no"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> История турниров — недоступна</li>
+                    <li class="no"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Несколько игровых профилей — нет</li>
+                    <li class="no"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Публичные страницы победы — нет</li>
+                    <li class="no"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Настройки генерации команд (звёзды, тиры) — нет</li>
+                    <li class="no"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Реклама отображается</li>
+                </ul>
+                <p class="sub-info">Достаточно для разовых турниров. Перейдите на PRO для полного доступа.</p>
+            </div>
+            <div class="sub-card highlight">
+                <span class="tag tag-pro">PRO</span>
+                <span class="tag tag-save">Месячная оплата</span>
+                <h2><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55.47.98.97 1.21l1.03.41c.55.22 1.17.22 1.72 0l1.03-.41c.5-.23.97-.66.97-1.21v-2.34"/><path d="M12 14a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg> Месяц</h2>
+                <p class="price">$6 <span style="font-size: 0.6em; font-weight: 400; color: var(--text-secondary);">/ мес</span></p>
+                <p class="price-note">Отмена в любой момент. Доступ сразу после оплаты.</p>
+                <ul class="sub-features">
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Всё из бесплатного тарифа</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Без рекламы</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> История всех турниров</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Несколько игровых профилей</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Детальная статистика</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Публичные страницы победы (турнир / матч)</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Настройки генерации команд (звёзды, тиры, уникальность)</li>
+                </ul>
+                <div class="btn-wrap">
+                    {% if user.is_authenticated %}
+                        {% if has_payment %}
+                            {% if has_2checkout %}
+                            <form method="post" action="{% url 'subscription_checkout' %}" class="js-checkout-form" style="margin-bottom: 0.5rem;" data-plan="monthly" data-provider="2checkout">
+                                {% csrf_token %}
+                                <input type="hidden" name="plan" value="monthly">
+                                <input type="hidden" name="provider" value="2checkout">
+                                <button type="submit" class="btn btn-primary">Купить — 2Checkout $6/мес</button>
+                            </form>
+                            {% endif %}
+                            {% if has_robokassa %}
+                            <form method="post" action="{% url 'subscription_checkout' %}" class="js-checkout-form" data-plan="monthly" data-provider="robokassa">
+                                {% csrf_token %}
+                                <input type="hidden" name="plan" value="monthly">
+                                <input type="hidden" name="provider" value="robokassa">
+                                <button type="submit" class="btn btn-primary">Купить — Robokassa (СНГ)</button>
+                            </form>
+                            {% endif %}
+                        {% else %}
+                            <p class="sub-info" style="margin-top: 0.5rem;">Оплата скоро будет доступна.</p>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'account_login' %}?next={% url 'subscription' %}" class="btn btn-primary">Войти и оформить</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="plan-year" class="sub-plan-wrap" role="tabpanel">
+        <div class="sub-cards">
+            <div class="sub-card free">
+                <span class="tag tag-free">Бесплатно</span>
+                <h2><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Бесплатный тариф</h2>
+                <p class="price">$0</p>
+                <p class="price-note">Те же возможности, что и в месячном сравнении.</p>
+                <ul class="sub-features">
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Один игровой профиль</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Базовая статистика</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Участие в турнирах</li>
+                    <li class="no"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> История турниров — нет</li>
+                    <li class="no"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Реклама отображается</li>
+                </ul>
+            </div>
+            <div class="sub-card highlight">
+                <span class="tag tag-pro">PRO</span>
+                <span class="tag tag-save">Экономия ~24%</span>
+                <h2><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55.47.98.97 1.21l1.03.41c.55.22 1.17.22 1.72 0l1.03-.41c.5-.23.97-.66.97-1.21v-2.34"/><path d="M12 14a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg> Год</h2>
+                <p class="price">$55 <span style="font-size: 0.6em; font-weight: 400; color: var(--text-secondary);">/ год</span></p>
+                <p class="price-note">Оплата раз в год. Все PRO-функции без ограничений.</p>
+                <ul class="sub-features">
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Всё из PRO месячного</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Без рекламы на весь год</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> История турниров</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Публичные страницы победы</li>
+                    <li class="yes"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Настройки генерации команд</li>
+                </ul>
+                <div class="btn-wrap">
+                    {% if user.is_authenticated %}
+                        {% if has_payment %}
+                            {% if has_2checkout %}
+                            <form method="post" action="{% url 'subscription_checkout' %}" class="js-checkout-form" style="margin-bottom: 0.5rem;" data-plan="yearly" data-provider="2checkout">
+                                {% csrf_token %}
+                                <input type="hidden" name="plan" value="yearly">
+                                <input type="hidden" name="provider" value="2checkout">
+                                <button type="submit" class="btn btn-primary">Купить — 2Checkout $55/год</button>
+                            </form>
+                            {% endif %}
+                            {% if has_robokassa %}
+                            <form method="post" action="{% url 'subscription_checkout' %}" class="js-checkout-form" data-plan="yearly" data-provider="robokassa">
+                                {% csrf_token %}
+                                <input type="hidden" name="plan" value="yearly">
+                                <input type="hidden" name="provider" value="robokassa">
+                                <button type="submit" class="btn btn-primary">Купить — Robokassa (СНГ)</button>
+                            </form>
+                            {% endif %}
+                        {% else %}
+                            <p class="sub-info" style="margin-top: 0.5rem;">Оплата скоро будет доступна.</p>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'account_login' %}?next={% url 'subscription' %}" class="btn btn-primary">Войти и оформить</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sub-trust">
+        <span class="sub-trust-item"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Безопасная оплата</span>
+        <span class="sub-trust-item"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Отмена подписки в любой момент</span>
+        <span class="sub-trust-item"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>2Checkout · Robokassa</span>
+    </div>
+    {% if has_payment %}
+    <p class="sub-info">Оплата: 2Checkout (Кыргызстан, мир) или Robokassa (СНГ). Безопасно.</p>
+    {% endif %}
+</div>
+
+<script>
+(function() {
+    var tabMonth = document.getElementById('tab-month');
+    var tabYear = document.getElementById('tab-year');
+    var planMonth = document.getElementById('plan-month');
+    var planYear = document.getElementById('plan-year');
+    if (!tabMonth || !tabYear) return;
+    tabMonth.addEventListener('click', function() {
+        tabMonth.classList.add('active');
+        tabMonth.setAttribute('aria-selected', 'true');
+        tabYear.classList.remove('active');
+        tabYear.setAttribute('aria-selected', 'false');
+        planMonth.classList.add('active');
+        planYear.classList.remove('active');
+    });
+    tabYear.addEventListener('click', function() {
+        tabYear.classList.add('active');
+        tabYear.setAttribute('aria-selected', 'true');
+        tabMonth.classList.remove('active');
+        tabMonth.setAttribute('aria-selected', 'false');
+        planYear.classList.add('active');
+        planMonth.classList.remove('active');
+    });
+})();
+</script>
+<script>
+(function() {
+    var ga4Id = '{{ ga4_measurement_id|escapejs }}';
+    var ymId = '{{ yandex_metrika_id|escapejs }}';
+    function sendEvent(eventName, params) {
+        if (ga4Id && typeof gtag === 'function') {
+            gtag('event', eventName, params || {});
+        }
+        if (ymId && typeof ym === 'function') {
+            ym(parseInt(ymId, 10), 'reachGoal', eventName);
+        }
+    }
+    sendEvent('subscription_page_view');
+    if ({{ payment_fail|yesno:'true,false' }}) { sendEvent('payment_fail'); }
+    document.querySelectorAll('.js-checkout-form').forEach(function(form) {
+        form.addEventListener('submit', function() {
+            sendEvent('checkout_click', {
+                plan: form.getAttribute('data-plan') || '',
+                provider: form.getAttribute('data-provider') || ''
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}

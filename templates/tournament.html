@@ -1,0 +1,773 @@
+{% extends 'base.html' %}
+{% load ad_tags %}
+
+{% block title %}FC Arena - Турнирная платформа{% endblock %}
+
+{% block content %}
+{% if tournament_complete and winner %}
+<!-- Success page: Победитель -->
+<div class="success-page">
+    <div class="success-wrap">
+        <div class="success-header">
+            <p class="success-tournament-name">{{ tournament_name }}</p>
+            <div class="success-crown-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="success-crown-icon">
+                    <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"></path>
+                    <path d="M5 21h14"></path>
+                </svg>
+            </div>
+            <h1 class="success-title" style="font-family: Rajdhani, sans-serif;">ПОБЕДИТЕЛЬ</h1>
+        </div>
+
+        <div class="success-winner-card">
+            <div class="success-trophy {% if winner.logo_url %}success-trophy-with-logo{% endif %}" style="{% if not winner.logo_url %}background-color: {{ winner.color }};{% endif %}">
+                {% if winner.logo_url %}
+                <img src="{{ winner.logo_url }}" alt="" class="success-winner-logo" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                {% else %}
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                </svg>
+                {% endif %}
+            </div>
+            <h2 class="success-winner-name">{{ winner.name }}</h2>
+            <p class="success-winner-team">{{ winner.team_name }}</p>
+            <div class="success-stats">
+                <div class="success-stat">
+                    <div class="success-stat-value">{{ winner.games }}</div>
+                    <div class="success-stat-label">Игр</div>
+                </div>
+                <div class="success-stat">
+                    <div class="success-stat-value success-stat-wins">{{ winner.wins }}</div>
+                    <div class="success-stat-label">Побед</div>
+                </div>
+                <div class="success-stat">
+                    <div class="success-stat-value success-stat-points">{{ winner.points }}</div>
+                    <div class="success-stat-label">Очков</div>
+                </div>
+                <div class="success-stat">
+                    <div class="success-stat-value success-stat-diff">{% if winner.goal_diff > 0 %}+{% endif %}{{ winner.goal_diff }}</div>
+                    <div class="success-stat-label">Разница</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="success-standings-card">
+            <h3 class="success-standings-title">Итоговая таблица</h3>
+            <div class="success-standings-list">
+                {% for standing in standings %}
+                <div class="success-standings-row">
+                    <div class="success-standings-left">
+                        {% if standing.logo_url %}
+                        <img src="{{ standing.logo_url }}" alt="" class="success-standings-logo" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                        {% endif %}
+                        <div class="success-standings-pos {% if forloop.counter == 1 %}pos-1{% elif forloop.counter == 2 %}pos-2{% elif forloop.counter == 3 %}pos-3{% else %}pos-default{% endif %}">{{ forloop.counter }}</div>
+                        <span class="success-standings-name">{{ standing.name }}</span>
+                        {% if is_bracket and standing.place_label %}
+                        <span class="success-standings-place-label">— {{ standing.place_label }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="success-standings-right">
+                        <span class="success-standings-team">{{ standing.team_name }}</span>
+                        {% if is_bracket %}
+                        <span class="success-standings-points">{{ standing.points }} побед в плей-офф</span>
+                        {% else %}
+                        <span class="success-standings-points">{{ standing.points }} оч.</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if user.is_authenticated and is_pro %}
+        <div class="success-share-block">
+            <p class="success-share-text">Поделитесь результатом с друзьями — создайте публичную страницу с победителем и итоговой таблицей. Ссылкой можно поделиться с кем угодно.</p>
+            {% if has_tournament_highlight %}
+            <div class="success-share-buttons">
+                <a href="{% url 'tournament_highlight_public' settings.highlight.slug %}" id="successHighlightLink" class="btn-success-highlight" data-fullurl="{{ request.scheme }}://{{ request.get_host }}{% url 'tournament_highlight_public' settings.highlight.slug %}" target="_blank" rel="noopener">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    Открыть публичную страницу победы
+                </a>
+                <button type="button" class="btn-success-highlight btn-success-copy-link" id="successCopyLinkBtn" title="Скопировать ссылку">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Скопировать ссылку
+                </button>
+            </div>
+            <script>
+            (function(){ var btn = document.getElementById('successCopyLinkBtn'); var link = document.getElementById('successHighlightLink'); if (btn && link && link.dataset.fullurl) { btn.addEventListener('click', function() { navigator.clipboard.writeText(link.dataset.fullurl).then(function() { var t = btn.innerHTML; btn.innerHTML = '<span>Скопировано</span>'; setTimeout(function() { btn.innerHTML = t; }, 2000); }); }); } })();
+            </script>
+            {% else %}
+            <form action="{% url 'create_tournament_highlight' %}" method="post" class="success-share-form">
+                {% csrf_token %}
+                <button type="submit" class="btn-success-highlight btn-success-highlight-create">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Создать публичную страницу победы
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <a href="{% url 'reset' %}" class="btn-new-tournament">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+            </svg>
+            Новый турнир
+        </a>
+    </div>
+</div>
+{% else %}
+<div class="tournament-page">
+    <div class="tournament-wrap">
+        <!-- Header -->
+        <div class="tournament-header">
+            <div class="tournament-header-left">
+                <h1 class="tournament-title" style="font-family: Rajdhani, sans-serif;">{{ tournament_name }}</h1>
+                <p class="tournament-subtitle">{% if has_group_stage %}Групповой этап • по 4 команды в группе{% elif is_bracket %}Плей-офф • Олимпийская система{% else %}Турнирная таблица • {% if is_double_round %}2 круга (дом + гости){% else %}1 круг{% endif %}{% endif %}</p>
+                {% if tournament_description %}
+                <div class="tournament-description">{{ tournament_description }}</div>
+                {% endif %}
+            </div>
+            <div class="tournament-header-actions">
+                {% if user.is_authenticated and is_pro %}
+                    {% if has_tournament_highlight %}
+                    <a href="{% url 'tournament_highlight_public' slug=settings.highlight.slug %}" class="btn-reset" style="margin-right: 0.5rem;" target="_blank" rel="noopener">Публичная страница</a>
+                    {% else %}
+                    <form action="{% url 'create_tournament_highlight' %}" method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-reset">Создать публичную страницу</button>
+                    </form>
+                    {% endif %}
+                {% endif %}
+                <a href="{% url 'reset' %}" class="btn-reset">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                        <path d="M3 3v5h5"></path>
+                    </svg>
+                    Сброс
+                </a>
+            </div>
+        </div>
+        {% if show_ads|default:True %}
+        <div class="ad-in-content" id="ad-mid" aria-label="Реклама" style="margin: 1rem 0;">Реклама</div>
+        {% endif %}
+        {% if has_group_stage %}
+        {% if playoff_created %}
+        <div class="playoff-link-wrap playoff-link-top">
+            <a href="{% url 'playoff' %}" class="btn btn-primary btn-playoff-link">Перейти к плей-офф</a>
+        </div>
+        {% else %}
+        <div id="playoff-button-container" class="playoff-button-wrap" aria-live="polite" data-csrf="{{ csrf_token }}"></div>
+        {% endif %}
+        <p class="group-stage-count">{{ played_matches }} / {{ total_matches }} матчей группового этапа</p>
+        {% for gblock in group_blocks %}
+        <div class="group-stage-block">
+            <h2 class="group-stage-title">{{ gblock.group.name }}</h2>
+            <div class="tournament-grid">
+                <div class="tournament-col standings-col">
+                    <div class="tournament-card">
+                        <div class="tournament-card-header">
+                            <h2 class="tournament-card-title">{{ gblock.group.name }} — таблица</h2>
+                        </div>
+                        <div class="tournament-table-wrap">
+                            <table class="tournament-standings-table">
+                                <thead>
+                                    <tr>
+                                        <th class="th-left">#</th>
+                                        <th class="th-left">Игрок</th>
+                                        <th class="th-center">И</th>
+                                        <th class="th-center">В</th>
+                                        <th class="th-center">Н</th>
+                                        <th class="th-center">П</th>
+                                        <th class="th-center">±</th>
+                                        <th class="th-right">О</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for standing in gblock.standings %}
+                                    <tr class="{% if forloop.counter == 1 %}row-leader{% endif %}">
+                                        <td class="td-left">
+                                            <div class="pos-badge {% if forloop.counter == 1 %}pos-1{% elif forloop.counter == 2 %}pos-2{% elif forloop.counter == 3 %}pos-3{% else %}pos-default{% endif %}">{{ forloop.counter }}</div>
+                                        </td>
+                                        <td class="td-left">
+                                            <div class="player-cell">
+                                                {% if standing.logo_url %}
+                                                <img src="{{ standing.logo_url }}" alt="" class="player-logo" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                                                {% else %}
+                                                <div class="player-dot" style="background-color: {{ standing.color }}"></div>
+                                                {% endif %}
+                                                <div>
+                                                    <div class="player-name">{{ standing.name }}</div>
+                                                    <div class="player-team">{{ standing.team_name }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="td-center text-muted">{{ standing.games }}</td>
+                                        <td class="td-center text-wins">{{ standing.wins }}</td>
+                                        <td class="td-center text-draws">{{ standing.draws }}</td>
+                                        <td class="td-center text-losses">{{ standing.losses }}</td>
+                                        <td class="td-center text-muted">{% if standing.goal_diff > 0 %}+{% endif %}{{ standing.goal_diff }}</td>
+                                        <td class="td-right">
+                                            <span class="{% if forloop.counter == 1 %}points-leader{% else %}points-normal{% endif %}">{{ standing.points }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="tournament-col matches-col">
+                    <div class="tournament-card">
+                        <div class="tournament-card-header">
+                            <h2 class="tournament-card-title">{{ gblock.group.name }} — матчи</h2>
+                        </div>
+                        <div class="matches-list">
+                            {% for block in gblock.round_blocks %}
+                            <div class="round-block">
+                                <h3 class="round-title bracket-round-title">{{ block.name }}</h3>
+                                <div class="round-matches">
+                                    {% for match in block.matches %}
+                                    <div class="match-card {% if match.is_played %}played{% endif %} {% if not match.is_played %}match-card-clickable{% endif %}"
+                                        {% if not match.is_played %}
+                                        data-update-url="{% url 'update_match' match.id %}"
+                                        data-home-name="{{ match.home_player.name }}"
+                                        data-home-team="{{ match.home_player.team_name }}"
+                                        data-home-color="{{ match.home_player.color }}"
+                                        data-home-initial="{{ match.home_player.name|slice:':1' }}"
+                                        data-home-logo="{{ match.home_player.logo_url|default:'' }}"
+                                        data-away-name="{{ match.away_player.name }}"
+                                        data-away-team="{{ match.away_player.team_name }}"
+                                        data-away-color="{{ match.away_player.color }}"
+                                        data-away-initial="{{ match.away_player.name|slice:':1' }}"
+                                        data-away-logo="{{ match.away_player.logo_url|default:'' }}"
+                                        data-station="{{ match.station|default:'' }}"
+                                        data-notes="{{ match.notes|default:''|escape }}"
+                                        {% endif %}>
+                                        {% if match.station %}
+                                        <div class="match-station-badge">{{ match.station }}</div>
+                                        {% endif %}
+                                        <div class="match-card-inner">
+                                            <div class="match-team match-team-left">
+                                                <div class="match-avatar-wrap">
+                                                    {% if match.home_player.logo_url %}
+                                                    <img src="{{ match.home_player.logo_url }}" alt="" class="match-team-logo" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                                                    {% else %}
+                                                    <div class="match-avatar" style="background-color: {{ match.home_player.color }}">{{ match.home_player.name|slice:":1" }}</div>
+                                                    {% endif %}
+                                                    {% if match.is_home %}<div class="home-badge-mini">Д</div>{% endif %}
+                                                </div>
+                                                <div class="match-team-info min-w-0">
+                                                    <div class="match-team-name truncate">{{ match.home_player.name }}</div>
+                                                    <div class="match-team-sub truncate">{{ match.home_player.team_name }}</div>
+                                                </div>
+                                            </div>
+                                            <div class="match-vs">
+                                                {% if match.is_played %}
+                                                <div class="match-score-inline">
+                                                    <span>{{ match.home_score|default:0 }}</span>
+                                                    <span class="score-sep">:</span>
+                                                    <span>{{ match.away_score|default:0 }}</span>
+                                                </div>
+                                                {% else %}
+                                                <div class="match-vs-text">vs</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="match-team match-team-right">
+                                                <div class="match-team-info min-w-0 text-right">
+                                                    <div class="match-team-name truncate">{{ match.away_player.name }}</div>
+                                                    <div class="match-team-sub truncate">{{ match.away_player.team_name }}</div>
+                                                </div>
+                                                <div class="match-avatar-wrap">
+                                                    {% if match.away_player.logo_url %}
+                                                    <img src="{{ match.away_player.logo_url }}" alt="" class="match-team-logo" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                                                    {% else %}
+                                                    <div class="match-avatar" style="background-color: {{ match.away_player.color }}">{{ match.away_player.name|slice:":1" }}</div>
+                                                    {% endif %}
+                                                    {% if not match.is_home %}<div class="home-badge-mini">Д</div>{% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if user.is_authenticated and is_pro %}
+                                    <div style="margin-top: 0.5rem;">
+                                        {% if match.highlight %}
+                                        <a href="{% url 'match_highlight_public' match.highlight.slug %}" target="_blank" rel="noopener" style="font-size: 0.8rem; color: var(--accent-green);">Публичная ссылка</a>
+                                        {% else %}
+                                        <form action="{% url 'create_match_highlight' match.id %}" method="post" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" style="font-size: 0.8rem; background: none; border: none; color: var(--accent-green); cursor: pointer;">Создать ссылку на матч</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <div class="tournament-grid">
+            <!-- Standings -->
+            <div class="tournament-col standings-col">
+                <div class="tournament-card">
+                    <div class="tournament-card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="card-icon">
+                            <path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"></path>
+                            <path d="M11 12 5.12 2.2"></path>
+                            <path d="m13 12 5.88-9.8"></path>
+                            <path d="M8 7h8"></path>
+                            <circle cx="12" cy="17" r="5"></circle>
+                            <path d="M12 18v-2h-.5"></path>
+                        </svg>
+                        <h2 class="tournament-card-title">Турнирная таблица</h2>
+                    </div>
+                    <div class="tournament-table-wrap">
+                        <table class="tournament-standings-table">
+                            <thead>
+                                <tr>
+                                    <th class="th-left">#</th>
+                                    <th class="th-left">Игрок</th>
+                                    <th class="th-center">И</th>
+                                    <th class="th-center">В</th>
+                                    <th class="th-center">Н</th>
+                                    <th class="th-center">П</th>
+                                    <th class="th-center">±</th>
+                                    <th class="th-right">О</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for standing in standings %}
+                                <tr class="{% if forloop.counter == 1 %}row-leader{% endif %}">
+                                    <td class="td-left">
+                                        <div class="pos-badge {% if forloop.counter == 1 %}pos-1{% elif forloop.counter == 2 %}pos-2{% elif forloop.counter == 3 %}pos-3{% else %}pos-default{% endif %}">{{ forloop.counter }}</div>
+                                    </td>
+                                    <td class="td-left">
+                                        <div class="player-cell">
+                                            {% if standing.logo_url %}
+                                            <img src="{{ standing.logo_url }}" alt="" class="player-logo" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                                            {% else %}
+                                            <div class="player-dot" style="background-color: {{ standing.color }}"></div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="player-name">{{ standing.name }}</div>
+                                                <div class="player-team">{{ standing.team_name }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="td-center text-muted">{{ standing.games }}</td>
+                                    <td class="td-center text-wins">{{ standing.wins }}</td>
+                                    <td class="td-center text-draws">{{ standing.draws }}</td>
+                                    <td class="td-center text-losses">{{ standing.losses }}</td>
+                                    <td class="td-center text-muted">{% if standing.goal_diff > 0 %}+{% endif %}{{ standing.goal_diff }}</td>
+                                    <td class="td-right">
+                                        <span class="{% if forloop.counter == 1 %}points-leader{% else %}points-normal{% endif %}">{{ standing.points }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matches -->
+            <div class="tournament-col matches-col">
+                <div class="tournament-card">
+                    <div class="tournament-card-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="card-icon">
+                            <path d="M8 2v4"></path>
+                            <path d="M16 2v4"></path>
+                            <rect width="18" height="18" x="3" y="4" rx="2"></rect>
+                            <path d="M3 10h18"></path>
+                        </svg>
+                        <h2 class="tournament-card-title">Матчи</h2>
+                        <span class="matches-count">{{ played_matches }} / {{ total_matches }} сыграно</span>
+                    </div>
+                    {% if not is_bracket %}
+                    <div class="matches-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot home-dot"></div>
+                            <span>Д — Домашний матч</span>
+                        </div>
+                        <div class="legend-item">
+                            <span>Матчи распределены по турам (не подряд)</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="matches-list">
+                        {% for block in round_blocks %}
+                        <div class="round-block">
+                            <h3 class="round-title bracket-round-title">{{ block.name }}</h3>
+                            <div class="round-matches">
+                                {% for match in block.matches %}
+                                <div class="match-card {% if match.is_played %}played{% endif %} {% if not match.is_played and match.home_player and match.away_player %}match-card-clickable{% endif %}"
+                                    {% if not match.is_played and match.home_player and match.away_player %}
+                                    data-update-url="{% url 'update_match' match.id %}"
+                                    data-home-name="{{ match.home_player.name }}"
+                                    data-home-team="{{ match.home_player.team_name }}"
+                                    data-home-color="{{ match.home_player.color }}"
+                                    data-home-initial="{{ match.home_player.name|slice:':1' }}"
+                                    data-home-logo="{{ match.home_player.logo_url|default:'' }}"
+                                    data-away-name="{{ match.away_player.name }}"
+                                    data-away-team="{{ match.away_player.team_name }}"
+                                    data-away-color="{{ match.away_player.color }}"
+                                    data-away-initial="{{ match.away_player.name|slice:':1' }}"
+                                    data-away-logo="{{ match.away_player.logo_url|default:'' }}"
+                                    data-station="{{ match.station|default:'' }}"
+                                    data-notes="{{ match.notes|default:''|escape }}"
+                                    {% endif %}>
+                                    {% if match.station %}
+                                    <div class="match-station-badge">{{ match.station }}</div>
+                                    {% endif %}
+                                    <div class="match-card-inner">
+                                        <div class="match-team match-team-left">
+                                            <div class="match-avatar-wrap">
+                                                {% if match.home_player %}
+                                                {% if match.home_player.logo_url %}
+                                                <img src="{{ match.home_player.logo_url }}" alt="" class="match-team-logo" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                                                {% else %}
+                                                <div class="match-avatar" style="background-color: {{ match.home_player.color }}">
+                                                    {{ match.home_player.name|slice:":1" }}
+                                                </div>
+                                                {% endif %}
+                                                {% if match.is_home %}
+                                                <div class="home-badge-mini">Д</div>
+                                                {% endif %}
+                                                {% else %}
+                                                <div class="match-avatar match-avatar-tbd">—</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="match-team-info min-w-0">
+                                                {% if match.home_player %}
+                                                <div class="match-team-name truncate">{{ match.home_player.name }}</div>
+                                                <div class="match-team-sub truncate">{{ match.home_player.team_name }}</div>
+                                                {% else %}
+                                                <div class="match-team-name match-team-tbd">Победитель предыдущего</div>
+                                                <div class="match-team-sub truncate">—</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div class="match-vs">
+                                            {% if match.is_played %}
+                                            <div class="match-score-inline">
+                                                <span>{{ match.home_score|default:0 }}</span>
+                                                <span class="score-sep">:</span>
+                                                <span>{{ match.away_score|default:0 }}</span>
+                                            </div>
+                                            {% else %}
+                                            <div class="match-vs-text">vs</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="match-team match-team-right">
+                                            <div class="match-team-info min-w-0 text-right">
+                                                {% if match.away_player %}
+                                                <div class="match-team-name truncate">{{ match.away_player.name }}</div>
+                                                <div class="match-team-sub truncate">{{ match.away_player.team_name }}</div>
+                                                {% else %}
+                                                <div class="match-team-name match-team-tbd">Победитель предыдущего</div>
+                                                <div class="match-team-sub truncate">—</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="match-avatar-wrap">
+                                                {% if match.away_player %}
+                                                {% if match.away_player.logo_url %}
+                                                <img src="{{ match.away_player.logo_url }}" alt="" class="match-team-logo" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                                                {% else %}
+                                                <div class="match-avatar" style="background-color: {{ match.away_player.color }}">
+                                                    {{ match.away_player.name|slice:":1" }}
+                                                </div>
+                                                {% endif %}
+                                                {% if not match.is_home %}
+                                                <div class="home-badge-mini">Д</div>
+                                                {% endif %}
+                                                {% else %}
+                                                <div class="match-avatar match-avatar-tbd">—</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if user.is_authenticated and is_pro %}
+                                    <div style="margin-top: 0.5rem;">
+                                        {% if match.highlight %}
+                                        <a href="{% url 'match_highlight_public' match.highlight.slug %}" target="_blank" rel="noopener" style="font-size: 0.8rem; color: var(--accent-green);">Публичная ссылка</a>
+                                        {% else %}
+                                        <form action="{% url 'create_match_highlight' match.id %}" method="post" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" style="font-size: 0.8rem; background: none; border: none; color: var(--accent-green); cursor: pointer;">Создать ссылку на матч</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if show_ads and forloop.first %}
+                        <div class="ad-in-content" style="margin: 1.5rem auto; text-align: center; min-height: 250px; max-width: 336px;" aria-label="Реклама">{% adsense 'in_content' %}{% yandex_ads 'in_content' %}</div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal: Результат матча -->
+<div id="matchModal" class="match-modal-overlay" aria-hidden="true">
+    <div class="match-modal-backdrop" data-modal-close></div>
+    <div class="match-modal-box">
+        <h3 class="match-modal-title">Результат матча</h3>
+        <div class="match-modal-teams">
+            <div class="match-modal-team">
+                <div id="modalHomeAvatar" class="match-modal-avatar"></div>
+                <div id="modalHomeName" class="match-modal-name"></div>
+                <div id="modalHomeTeam" class="match-modal-team-name"></div>
+            </div>
+            <div class="match-modal-vs">VS</div>
+            <div class="match-modal-team">
+                <div id="modalAwayAvatar" class="match-modal-avatar"></div>
+                <div id="modalAwayName" class="match-modal-name"></div>
+                <div id="modalAwayTeam" class="match-modal-team-name"></div>
+            </div>
+        </div>
+        <form id="matchScoreForm" method="POST" action="" class="match-modal-form">
+            {% csrf_token %}
+            <div class="match-modal-scores">
+                <div class="match-modal-score-field">
+                    <label class="match-modal-score-label">Голы</label>
+                    <input type="number" name="home_score" id="modalHomeScore" min="0" value="0" required>
+                </div>
+                <span class="match-modal-score-sep">:</span>
+                <div class="match-modal-score-field">
+                    <label class="match-modal-score-label">Голы</label>
+                    <input type="number" name="away_score" id="modalAwayScore" min="0" value="0" required>
+                </div>
+            </div>
+            <div class="match-modal-extra">
+                <div class="match-modal-field">
+                    <label class="match-modal-extra-label">Корт / станция</label>
+                    <input type="text" name="station" id="modalStation" placeholder="Напр. Корт 1" maxlength="100">
+                </div>
+                <div class="match-modal-field">
+                    <label class="match-modal-extra-label">Заметки к матчу</label>
+                    <textarea name="notes" id="modalNotes" placeholder="Необязательно" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="match-modal-actions">
+                <button type="button" class="match-modal-btn match-modal-btn-cancel" data-modal-close>Отмена</button>
+                <button type="submit" class="match-modal-btn match-modal-btn-save">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    var modal = document.getElementById('matchModal');
+    var form = document.getElementById('matchScoreForm');
+    if (!modal || !form) return;
+
+    var currentCard = null;
+
+    function openModal(card) {
+        if (!card.dataset.updateUrl) return;
+        currentCard = card;
+        form.action = card.dataset.updateUrl;
+        var homeAvatar = document.getElementById('modalHomeAvatar');
+        var awayAvatar = document.getElementById('modalAwayAvatar');
+        if (card.dataset.homeLogo) {
+            homeAvatar.innerHTML = '<img src="' + card.dataset.homeLogo + '" alt="" class="match-modal-logo" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\'">';
+            homeAvatar.style.backgroundColor = '';
+        } else {
+            homeAvatar.innerHTML = '';
+            homeAvatar.textContent = card.dataset.homeInitial || '';
+            homeAvatar.style.backgroundColor = card.dataset.homeColor || '';
+        }
+        if (card.dataset.awayLogo) {
+            awayAvatar.innerHTML = '<img src="' + card.dataset.awayLogo + '" alt="" class="match-modal-logo" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\'">';
+            awayAvatar.style.backgroundColor = '';
+        } else {
+            awayAvatar.innerHTML = '';
+            awayAvatar.textContent = card.dataset.awayInitial || '';
+            awayAvatar.style.backgroundColor = card.dataset.awayColor || '';
+        }
+        document.getElementById('modalHomeName').textContent = card.dataset.homeName;
+        document.getElementById('modalHomeTeam').textContent = card.dataset.homeTeam;
+        document.getElementById('modalAwayName').textContent = card.dataset.awayName;
+        document.getElementById('modalAwayTeam').textContent = card.dataset.awayTeam;
+        document.getElementById('modalHomeScore').value = card.dataset.homeScore !== undefined ? card.dataset.homeScore : '0';
+        document.getElementById('modalAwayScore').value = card.dataset.awayScore !== undefined ? card.dataset.awayScore : '0';
+        document.getElementById('modalStation').value = card.dataset.station || '';
+        document.getElementById('modalNotes').value = card.dataset.notes || '';
+        modal.classList.add('match-modal-open');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal() {
+        modal.classList.remove('match-modal-open');
+        modal.setAttribute('aria-hidden', 'true');
+        currentCard = null;
+    }
+
+    function updateCardWithScore(card, data) {
+        if (!card) return;
+        var vsEl = card.querySelector('.match-vs');
+        if (vsEl) {
+            vsEl.innerHTML = '<div class="match-score-inline"><span>' + data.home_score + '</span><span class="score-sep">:</span><span>' + data.away_score + '</span></div>';
+        }
+        card.classList.add('played');
+        card.dataset.homeScore = data.home_score;
+        card.dataset.awayScore = data.away_score;
+        card.dataset.station = data.station || '';
+        card.dataset.notes = data.notes || '';
+        var countEl = document.querySelector('.matches-count');
+        if (countEl) {
+            var m = countEl.textContent.match(/(\d+)\s*\/\s*(\d+)/);
+            if (m) {
+                var played = parseInt(m[1], 10) + 1;
+                countEl.textContent = played + ' / ' + m[2] + ' сыграно';
+            }
+        }
+        var stationBadge = card.querySelector('.match-station-badge');
+        if (data.station) {
+            if (!stationBadge) {
+                var inner = card.querySelector('.match-card-inner');
+                if (inner) {
+                    stationBadge = document.createElement('div');
+                    stationBadge.className = 'match-station-badge';
+                    card.insertBefore(stationBadge, inner);
+                }
+            }
+            if (stationBadge) stationBadge.textContent = data.station;
+        } else if (stationBadge) {
+            stationBadge.remove();
+        }
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!form.action) return;
+        var saveBtn = form.querySelector('.match-modal-btn-save');
+        if (saveBtn) saveBtn.disabled = true;
+        var formData = new FormData(form);
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        }).then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+        .then(function(result) {
+            if (saveBtn) saveBtn.disabled = false;
+            if (result.ok && result.data.ok) {
+                updateCardWithScore(currentCard, result.data);
+                if (result.data.all_complete && result.data.redirect) {
+                    window.location.href = result.data.redirect;
+                } else {
+                    closeModal();
+                }
+            } else {
+                alert(result.data.error || 'Ошибка сохранения');
+            }
+        }).catch(function() {
+            if (saveBtn) saveBtn.disabled = false;
+            alert('Ошибка сохранения');
+        });
+    });
+
+    document.querySelectorAll('.match-card-clickable').forEach(function(card) {
+        card.addEventListener('click', function() { openModal(card); });
+    });
+
+    modal.querySelectorAll('[data-modal-close]').forEach(function(btn) {
+        btn.addEventListener('click', closeModal);
+    });
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal.querySelector('.match-modal-backdrop')) closeModal();
+    });
+})();
+</script>
+<script>
+(function() {
+    var container = document.getElementById('playoff-button-container');
+    if (!container) return;
+
+    function getCookie(name) {
+        var v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return v ? v.pop() : '';
+    }
+
+    function showPlayoffButton() {
+        var csrf = container.dataset.csrf || getCookie('csrftoken');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-primary btn-playoff-create';
+        btn.textContent = 'Перейти в плей-офф';
+        btn.addEventListener('click', function() {
+            btn.disabled = true;
+            btn.textContent = 'Создание сетки…';
+            fetch('{% url "create_playoff" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrf,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
+                },
+                body: 'csrfmiddlewaretoken=' + encodeURIComponent(csrf)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.ok && data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = 'Перейти в плей-офф';
+                    alert(data.error || 'Ошибка');
+                }
+            })
+            .catch(function() {
+                btn.disabled = false;
+                btn.textContent = 'Перейти в плей-офф';
+                alert('Ошибка сети');
+            });
+        });
+        container.appendChild(btn);
+    }
+
+    fetch('{% url "group_stage_status" %}', { headers: { 'Accept': 'application/json' } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.show_playoff_button) showPlayoffButton();
+        })
+        .catch(function() {});
+})();
+</script>
+{% endif %}
+{% endblock %}

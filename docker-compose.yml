@@ -1,0 +1,31 @@
+# Для работы с PostgreSQL задайте в .env: DATABASE_URL=postgres://fc26:fc26@db:5432/fc26
+# и переменные POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB. Без DATABASE_URL приложение использует SQLite.
+services:
+  web:
+    build: .
+    command: gunicorn fc26_django.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fc26}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fc26}
+      POSTGRES_DB: ${POSTGRES_DB:-fc26}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

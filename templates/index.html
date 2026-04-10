@@ -1,0 +1,553 @@
+{% extends 'base.html' %}
+
+{% block title %}FC Arena — Турнирная платформа{% endblock %}
+{% block meta_description %}<meta name="description" content="Создай турнир по EA Sports FC 26: круговой или плей-офф. Генерация команд, таблицы и матчи. Турнирная платформа FC Arena.">{% endblock %}
+
+{% block content %}
+{% if step == '1' %}
+<div class="index-hero">
+    <div class="index-wrap">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon logo-icon-gamepad">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="6" x2="10" y1="11" y2="11"></line>
+                        <line x1="8" x2="8" y1="9" y2="13"></line>
+                        <line x1="15" x2="15.01" y1="12" y2="12"></line>
+                        <line x1="18" x2="18.01" y1="10" y2="10"></line>
+                        <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"></path>
+                    </svg>
+                </div>
+                <h1>FC <span>ARENA</span></h1>
+            </div>
+            <p class="subtitle">Создай свой турнир: круговой или плей-офф</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash-message flash-message-{{ message.tags|default:'info' }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="GET" action="{% url 'index' %}" class="setup-form">
+            <input type="hidden" name="step" value="2">
+            <input type="hidden" name="num" id="numPlayers" value="4">
+            <input type="hidden" name="type" id="tournamentType" value="round_robin">
+            <div class="card card-single type-select-card">
+                <h2>Тип турнира</h2>
+                <div class="type-select-buttons">
+                    <button type="button" class="type-btn type-btn-round active" data-type="round_robin">Круговой (Round Robin)</button>
+                    <button type="button" class="type-btn type-btn-bracket" data-type="bracket">Олимпийская система (брекеты)</button>
+                </div>
+            </div>
+            {% if show_ads|default:True %}
+            <div class="ad-in-content" id="ad-mid" aria-label="Реклама">{% load ad_tags %}{% adsense 'in_content' %}{% yandex_ads 'in_content' %}</div>
+            {% endif %}
+            <div class="card card-single">
+                <h2>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Количество участников
+                </h2>
+
+                <div class="player-count-selector">
+                    <button type="button" class="count-btn count-btn-minus" data-delta="-1" aria-label="Уменьшить">−</button>
+                    <div class="count-display" id="countDisplay">4</div>
+                    <button type="button" class="count-btn count-btn-plus" data-delta="1" aria-label="Увеличить">+</button>
+                </div>
+
+                <div class="quick-select" id="quickSelectCount">
+                    <button type="button" class="quick-btn" data-count="2">2</button>
+                    <button type="button" class="quick-btn active" data-count="4">4</button>
+                    <button type="button" class="quick-btn" data-count="8">8</button>
+                    <button type="button" class="quick-btn" data-count="12">12</button>
+                    <button type="button" class="quick-btn" data-count="16">16</button>
+                </div>
+                <p class="quick-select-hint" id="bracketHint" style="display:none;">Без групп: 2, 4, 8, 16. С групповым этапом: 8, 12 или 16 (по 4 в группе)</p>
+
+                <button type="submit" class="btn btn-primary btn-continue">Продолжить</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="index-step2">
+    <div class="step2-wrap">
+        <div class="step2-header">
+            <h1 class="step2-title" style="font-family: Rajdhani, sans-serif;">FC <span>ARENA</span></h1>
+            <p class="step2-subtitle">Добавь участников турнира</p>
+        </div>
+        {% if show_ads|default:True %}
+        <div class="ad-in-content" id="ad-mid" aria-label="Реклама" style="margin: 1rem auto;">{% load ad_tags %}{% adsense 'in_content' %}{% yandex_ads 'in_content' %}</div>
+        {% endif %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash-message flash-message-{{ message.tags|default:'info' }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'setup' %}">
+            {% csrf_token %}
+            <input type="hidden" name="num_players" value="{{ num_players }}">
+            <input type="hidden" name="tournament_type" value="{{ tournament_type }}">
+
+            <div class="step2-optional-card">
+                <label class="step2-optional-label">Название турнира (необязательно)</label>
+                <input type="text" name="tournament_name" class="step2-optional-input" placeholder="FC Arena" maxlength="200">
+                <label class="step2-optional-label">Описание / объявления (необязательно)</label>
+                <textarea name="tournament_description" class="step2-optional-textarea" placeholder="Краткое описание или объявление для участников" rows="2"></textarea>
+            </div>
+
+            <div class="card card-single step2-star-filter" style="margin: 1rem 0; padding: 1rem;">
+                <h3 style="margin-top: 0; color: var(--accent-green);">Фильтр по звёздам (клубы и сборные)</h3>
+                <p class="step2-pro-hint" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Рейтинги из FC 26 Live. Выберите диапазон и нажмите «Клубы» или «Сборные».</p>
+                <input type="hidden" name="pro_min_star_rating" id="pro_min_star_rating" value="{% if pro_form.pro_min_star_rating %}{{ pro_form.pro_min_star_rating }}{% endif %}">
+                <input type="hidden" name="pro_max_star_rating" id="pro_max_star_rating" value="{% if pro_form.pro_max_star_rating %}{{ pro_form.pro_max_star_rating }}{% endif %}">
+                <div class="pro-star-buttons" style="margin-bottom: 1rem;">
+                    <span class="pro-star-label" style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Мин. звёзды</span>
+                    <div class="pro-star-btn-group" data-target="pro_min_star_rating" role="group">
+                        <button type="button" class="pro-star-btn" data-value="">—</button>
+                        <button type="button" class="pro-star-btn" data-value="30">3 ★</button>
+                        <button type="button" class="pro-star-btn" data-value="35">3.5 ★</button>
+                        <button type="button" class="pro-star-btn" data-value="40">4 ★</button>
+                        <button type="button" class="pro-star-btn" data-value="45">4.5 ★</button>
+                        <button type="button" class="pro-star-btn" data-value="50">5 ★</button>
+                    </div>
+                </div>
+                <div class="pro-star-buttons">
+                    <span class="pro-star-label" style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Макс. звёзды</span>
+                    <div class="pro-star-btn-group" data-target="pro_max_star_rating" role="group">
+                        <button type="button" class="pro-star-btn" data-value="">—</button>
+                        <button type="button" class="pro-star-btn" data-value="30">3 ★</button>
+                        <button type="button" class="pro-star-btn" data-value="35">3.5 ★</button>
+                        <button type="button" class="pro-star-btn" data-value="40">4 ★</button>
+                        <button type="button" class="pro-star-btn" data-value="45">4.5 ★</button>
+                        <button type="button" class="pro-star-btn" data-value="50">5 ★</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step2-fill-buttons">
+                <span class="step2-fill-label">Подставить команды из EA Sports FC 26:</span>
+                <div class="step2-fill-btns-wrap">
+                    <a href="#" class="btn-fill btn-fill-clubs" id="btn-fill-clubs" data-fill="clubs">
+                        <span class="btn-fill-icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </span>
+                        <span class="btn-fill-text">Клубы</span>
+                    </a>
+                    <a href="#" class="btn-fill btn-fill-national" id="btn-fill-national" data-fill="national">
+                        <span class="btn-fill-icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        </span>
+                        <span class="btn-fill-text">Сборные</span>
+                    </a>
+                </div>
+            </div>
+            <script>
+            (function() {
+                var apiUrl = "{% url 'api_generate_teams' %}";
+                var numPlayers = {{ num_players }};
+
+                function buildQueryString(fill) {
+                    var params = new URLSearchParams();
+                    params.set('num_players', numPlayers);
+                    params.set('fill', fill);
+                    var minStar = document.getElementById('pro_min_star_rating');
+                    var maxStar = document.getElementById('pro_max_star_rating');
+                    if (minStar && minStar.value) params.set('pro_min_star_rating', minStar.value);
+                    if (maxStar && maxStar.value) params.set('pro_max_star_rating', maxStar.value);
+                    return params.toString();
+                }
+
+                function setButtonsLoading(loading) {
+                    var btnClubs = document.getElementById('btn-fill-clubs');
+                    var btnNational = document.getElementById('btn-fill-national');
+                    [btnClubs, btnNational].forEach(function(btn) {
+                        if (!btn) return;
+                        btn.classList.toggle('btn-fill-loading', loading);
+                        btn.style.pointerEvents = loading ? 'none' : '';
+                    });
+                }
+
+                function applyTeams(teams) {
+                    for (var i = 0; i < teams.length; i++) {
+                        var t = teams[i];
+                        var nameInput = document.querySelector('input[name="player_name_' + i + '"]');
+                        var teamInput = document.querySelector('input[name="player_team_' + i + '"]');
+                        if (nameInput) nameInput.value = (t && t.name) ? t.name : '';
+                        if (teamInput) {
+                            teamInput.value = (t && t.team_name) ? t.team_name : '';
+                            teamInput.dataset.lastSelectedTeam = (t && t.team_name) ? t.team_name : '';
+                            var logoImg = teamInput.closest('.team-autocomplete-wrap').querySelector('.team-logo-preview');
+                            if (logoImg) {
+                                logoImg.src = (t && t.logo_url) ? t.logo_url : '';
+                                logoImg.style.display = (t && t.logo_url) ? '' : 'none';
+                            }
+                        }
+                    }
+                }
+
+                function doFill(fill) {
+                    setButtonsLoading(true);
+                    fetch(apiUrl + '?' + buildQueryString(fill), {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.teams) applyTeams(data.teams);
+                    })
+                    .catch(function() {})
+                    .then(function() { setButtonsLoading(false); });
+                }
+
+                function initStarButtons() {
+                    document.querySelectorAll('.pro-star-btn-group').forEach(function(group) {
+                        var targetId = group.getAttribute('data-target');
+                        var input = targetId ? document.getElementById(targetId) : null;
+                        if (!input) return;
+                        group.querySelectorAll('.pro-star-btn').forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var v = btn.getAttribute('data-value') || '';
+                                input.value = v;
+                                group.querySelectorAll('.pro-star-btn').forEach(function(b) { b.classList.remove('active'); });
+                                btn.classList.add('active');
+                            });
+                        });
+                        var val = (input.value || '').toString();
+                        var toSelect = group.querySelector('.pro-star-btn[data-value="' + val + '"]');
+                        if (toSelect) toSelect.classList.add('active');
+                    });
+                }
+                initStarButtons();
+
+                document.getElementById('btn-fill-clubs') && document.getElementById('btn-fill-clubs').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    doFill('clubs');
+                });
+                document.getElementById('btn-fill-national') && document.getElementById('btn-fill-national').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    doFill('national');
+                });
+            })();
+            </script>
+
+            <div class="step2-grid">
+                {% for slot, suggested in slots_with_suggested %}
+                <div class="player-card">
+                    <div class="player-header">
+                        <div class="player-number" style="background-color: {{ slot.color }}">{{ slot.i|add:1 }}</div>
+                        <span class="player-label">Участник {{ slot.i|add:1 }}</span>
+                    </div>
+                    <div class="player-inputs">
+                        {% if user.is_authenticated and user_game_profiles %}
+                        <div class="player-profile-select-wrap">
+                            <label class="player-profile-label">Игровой профиль</label>
+                            <select name="player_profile_{{ slot.i }}" class="player-profile-select" data-slot="{{ slot.i }}" aria-label="Выберите профиль для участника {{ slot.i|add:1 }}">
+                                <option value="">— Имя вручную</option>
+                                {% for gp in user_game_profiles %}
+                                <option value="{{ gp.id }}" data-nickname="{{ gp.nickname }}">{{ gp.nickname }}{% if gp.is_primary %} (основной){% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+                        <input type="text" name="player_name_{{ slot.i }}" class="player-name-input" data-slot="{{ slot.i }}" placeholder="Имя игрока (необязательно)" value="{% if suggested %}{{ suggested.name }}{% endif %}">
+                        <div class="player-team-field team-autocomplete-wrap">
+                                            <img src="{% if suggested and suggested.logo_url %}{{ suggested.logo_url }}{% endif %}" alt="" class="player-input-logo team-logo-preview" loading="lazy" onerror="this.onerror=null;this.style.display='none'" {% if not suggested or not suggested.logo_url %}style="display:none"{% endif %}>
+                                            <div class="team-input-wrap">
+                                                <input type="text" name="player_team_{{ slot.i }}" class="team-input" placeholder="Название команды" value="{% if suggested %}{{ suggested.team_name }}{% endif %}" required autocomplete="off" data-suggestions-url="{% url 'team_suggestions' %}">
+                                                <div class="team-suggestions" aria-hidden="true"></div>
+                                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if tournament_type == 'round_robin' %}
+            <div class="toggle-card toggle-card-double-round">
+                <div class="toggle-row">
+                    <div class="toggle-left">
+                        <label class="toggle-switch" for="doubleRound">
+                            <input type="checkbox" name="is_double_round" id="doubleRound" {% if is_double_round %}checked{% endif %} onchange="updateToggle()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="toggle-info">
+                            <h4>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                                Два круга (Дома и в гостях)
+                            </h4>
+                            <p id="toggleText">Каждая пара сыграет {% if is_double_round %}2{% else %}1{% endif %} матч{% if is_double_round %}а{% endif %}</p>
+                        </div>
+                    </div>
+                    <div class="round-badge-wrap">
+                        <div class="round-badge-value" id="roundBadge">{% if is_double_round %}2x{% else %}1x{% endif %}</div>
+                        <div class="round-badge-label">матчи</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if bracket_allowed %}
+            <div class="toggle-card toggle-card-group-stage">
+                <div class="toggle-row">
+                    <div class="toggle-left">
+                        <label class="toggle-switch" for="groupStage">
+                            <input type="checkbox" name="has_group_stage" id="groupStage" {% if has_group_stage %}checked{% endif %}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="toggle-info">
+                            <h4>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="7" height="7"></rect>
+                                    <rect x="14" y="3" width="7" height="7"></rect>
+                                    <rect x="14" y="14" width="7" height="7"></rect>
+                                    <rect x="3" y="14" width="7" height="7"></rect>
+                                </svg>
+                                С групповым этапом
+                            </h4>
+                            <p>Сначала группы, затем плей-офф (скоро)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="step2-actions">
+                <a href="{% url 'index' %}?step=1" class="btn-back">Назад</a>
+                <button type="submit" class="btn btn-primary">Начать турнир</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+(function() {
+    var DEBOUNCE_MS = 220;
+    var suggestionTimers = {};
+    var currentSuggestionsEl = null;
+
+    // При выборе игрового профиля подставляем никнейм в поле имени
+    document.querySelectorAll('.player-profile-select').forEach(function(sel) {
+        sel.addEventListener('change', function() {
+            var opt = this.options[this.selectedIndex];
+            var nickname = opt && opt.getAttribute('data-nickname');
+            var slot = this.getAttribute('data-slot');
+            var nameInput = document.querySelector('input.player-name-input[data-slot="' + slot + '"]');
+            if (nameInput && nickname) {
+                nameInput.value = nickname;
+            } else if (nameInput && !nickname) {
+                nameInput.value = '';
+            }
+        });
+    });
+
+    function hideSuggestions() {
+        document.querySelectorAll('.team-suggestions').forEach(function(el) {
+            el.innerHTML = '';
+            el.classList.remove('team-suggestions-visible');
+            el.setAttribute('aria-hidden', 'true');
+        });
+        currentSuggestionsEl = null;
+        var step2Wrap = document.querySelector('.index-step2 .step2-wrap');
+        if (step2Wrap) step2Wrap.classList.remove('team-dropdown-open');
+    }
+
+    function showSuggestions(wrap, items) {
+        var dropdown = wrap.querySelector('.team-suggestions');
+        if (!dropdown) return;
+        dropdown.innerHTML = '';
+        if (!items || items.length === 0) {
+            dropdown.classList.remove('team-suggestions-visible');
+            dropdown.setAttribute('aria-hidden', 'true');
+            return;
+        }
+        items.forEach(function(item) {
+            var row = document.createElement('div');
+            row.className = 'team-suggestion-row';
+            row.setAttribute('data-team-name', item.team_name);
+            row.setAttribute('data-logo-url', item.logo_url || '');
+            var img = '';
+            if (item.logo_url) {
+                img = '<img src="' + item.logo_url + '" alt="" class="team-suggestion-logo" onerror="this.style.display=\'none\'">';
+            }
+            row.innerHTML = img + '<span class="team-suggestion-name">' + escapeHtml(item.team_name) + '</span>';
+            row.addEventListener('click', function() {
+                var wrapRoot = wrap.closest('.team-autocomplete-wrap');
+                var input = wrapRoot.querySelector('.team-input');
+                var logoImg = wrapRoot.querySelector('.team-logo-preview');
+                if (input) {
+                    input.dataset.lastSelectedTeam = item.team_name;
+                    input.value = item.team_name;
+                }
+                if (logoImg) {
+                    logoImg.src = item.logo_url || '';
+                    logoImg.style.display = item.logo_url ? '' : 'none';
+                }
+                hideSuggestions();
+            });
+            dropdown.appendChild(row);
+        });
+        dropdown.classList.add('team-suggestions-visible');
+        dropdown.setAttribute('aria-hidden', 'false');
+        currentSuggestionsEl = dropdown;
+        var step2Wrap = wrap.closest('.step2-wrap');
+        if (step2Wrap) step2Wrap.classList.add('team-dropdown-open');
+    }
+
+    function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+
+    function fetchSuggestions(input) {
+        var wrap = input.closest('.team-autocomplete-wrap');
+        var url = input.getAttribute('data-suggestions-url') || '/api/team-suggestions/';
+        var q = (input.value || '').trim();
+        if (q.length < 2) {
+            hideSuggestions();
+            return;
+        }
+        fetch(url + '?q=' + encodeURIComponent(q))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.suggestions && data.suggestions.length) {
+                    showSuggestions(wrap, data.suggestions);
+                } else {
+                    hideSuggestions();
+                }
+            })
+            .catch(function() { hideSuggestions(); });
+    }
+
+    function clearLogoForInput(input) {
+        var wrap = input.closest('.team-autocomplete-wrap');
+        if (!wrap) return;
+        var logoImg = wrap.querySelector('.team-logo-preview');
+        if (logoImg) {
+            logoImg.style.display = 'none';
+            logoImg.removeAttribute('src');
+        }
+        input.removeAttribute('data-last-selected-team');
+    }
+
+    document.querySelectorAll('.team-input').forEach(function(input) {
+        input.addEventListener('input', function() {
+            if (input.value === input.dataset.lastSelectedTeam) return;
+            clearLogoForInput(input);
+            var key = input.name;
+            if (suggestionTimers[key]) clearTimeout(suggestionTimers[key]);
+            suggestionTimers[key] = setTimeout(function() {
+                fetchSuggestions(input);
+            }, DEBOUNCE_MS);
+        });
+        input.addEventListener('focus', function() {
+            var q = (input.value || '').trim();
+            if (q.length >= 2) fetchSuggestions(input);
+        });
+        input.addEventListener('blur', function() {
+            setTimeout(hideSuggestions, 180);
+        });
+    });
+
+    document.addEventListener('click', function(e) {
+        if (currentSuggestionsEl && !currentSuggestionsEl.contains(e.target)) {
+            var inInput = e.target.closest('.team-input');
+            if (!inInput) hideSuggestions();
+        }
+    });
+})();
+</script>
+<script>
+    function updateToggle() {
+        var cb = document.getElementById('doubleRound');
+        var text = document.getElementById('toggleText');
+        var badge = document.getElementById('roundBadge');
+        if (cb.checked) {
+            text.textContent = 'Каждая пара сыграет 2 матча';
+            badge.textContent = '2x';
+        } else {
+            text.textContent = 'Каждая пара сыграет 1 матч';
+            badge.textContent = '1x';
+        }
+    }
+</script>
+{% endif %}
+
+{% if step == '1' %}
+<script>
+    (function() {
+        const MIN_COUNT = 2;
+        const MAX_COUNT = 16;
+        const BRACKET_ALLOWED = [2, 4, 8, 12, 16];
+        let currentCount = 4;
+        let tournamentType = 'round_robin';
+
+        function changeCount(delta) {
+            var next = currentCount + delta;
+            if (next < MIN_COUNT) next = MIN_COUNT;
+            if (next > MAX_COUNT) next = MAX_COUNT;
+            currentCount = next;
+            updateDisplay();
+        }
+
+        function setCount(count) {
+            if (count >= MIN_COUNT && count <= MAX_COUNT) {
+                currentCount = count;
+                updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('countDisplay').textContent = currentCount;
+            document.getElementById('numPlayers').value = currentCount;
+            var quickSelect = document.getElementById('quickSelectCount');
+            if (quickSelect) {
+                quickSelect.querySelectorAll('.quick-btn').forEach(btn => {
+                    var c = parseInt(btn.dataset.count);
+                    btn.classList.toggle('active', c === currentCount);
+                    btn.classList.toggle('disabled', tournamentType === 'bracket' && BRACKET_ALLOWED.indexOf(c) === -1);
+                });
+            }
+            var hint = document.getElementById('bracketHint');
+            if (hint) hint.style.display = tournamentType === 'bracket' ? 'block' : 'none';
+        }
+
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                tournamentType = this.dataset.type || 'round_robin';
+                document.getElementById('tournamentType').value = tournamentType;
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                if (tournamentType === 'bracket' && BRACKET_ALLOWED.indexOf(currentCount) === -1) {
+                    currentCount = 8;
+                }
+                updateDisplay();
+            });
+        });
+
+        document.querySelectorAll('.quick-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                setCount(parseInt(this.dataset.count));
+            });
+        });
+
+        document.querySelectorAll('.count-btn[data-delta]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                var delta = parseInt(this.getAttribute('data-delta'), 10);
+                if (!isNaN(delta)) changeCount(delta);
+            });
+        });
+
+        updateDisplay();
+    })();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load socialaccount %}
+{% block title %}Вход — FC Arena{% endblock %}
+{% block content %}
+<div class="container auth-form-wrap" style="max-width: 420px; margin: 3rem auto;">
+    <div class="card card-single">
+        <h2>Вход</h2>
+        {% if process == "connect" %}
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Подключить аккаунт {{ provider.name }}?</p>
+        {% else %}
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Войти через {{ provider.name }}.</p>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Продолжить</button>
+        </form>
+        <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+            <a href="{% url 'account_login' %}" style="color: var(--accent-green);">← Назад к входу</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

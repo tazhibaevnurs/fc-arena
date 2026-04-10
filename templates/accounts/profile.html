@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Профиль — FC Arena{% endblock %}
+{% block content %}
+{% if payment_success %}
+<script>
+(function() {
+    var ga4Id = '{{ ga4_measurement_id|escapejs }}';
+    var ymId = '{{ yandex_metrika_id|escapejs }}';
+    if (ga4Id && typeof gtag === 'function') { gtag('event', 'payment_success', {}); }
+    if (ymId && typeof ym === 'function') { ym(parseInt(ymId, 10), 'reachGoal', 'payment_success'); }
+})();
+</script>
+{% endif %}
+<style>
+.profile-page { max-width: 560px; margin: 2rem auto; padding: 0 1rem; }
+.profile-header { text-align: center; margin-bottom: 1.5rem; }
+.profile-header-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.25), rgba(5, 150, 105, 0.2));
+    color: var(--accent-green);
+}
+.profile-title { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin: 0; font-family: 'Rajdhani', sans-serif; }
+.profile-card-wrap {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+.profile-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+}
+.profile-row:last-of-type { border-bottom: none; }
+.profile-row-icon {
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(52, 211, 153, 0.15);
+    color: var(--accent-green);
+}
+.profile-row-body { flex: 1; min-width: 0; }
+.profile-row-label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.15rem; }
+.profile-row-value { font-weight: 600; color: white; font-size: 1rem; }
+.profile-link-block {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+}
+.profile-link-block a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--accent-green);
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+.profile-link-block a:hover { opacity: 0.9; }
+.profile-link-block a svg { flex-shrink: 0; }
+.profile-status {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 12px;
+    background: rgba(52, 211, 153, 0.1);
+    border: 1px solid rgba(52, 211, 153, 0.25);
+}
+.profile-status.profile-status-inactive {
+    background: rgba(100, 116, 139, 0.15);
+    border-color: rgba(100, 116, 139, 0.3);
+}
+.profile-status-icon { flex-shrink: 0; color: var(--accent-green); }
+.profile-status.profile-status-inactive .profile-status-icon { color: var(--text-secondary); }
+.profile-status-text { font-size: 0.95rem; color: var(--text-primary); margin: 0; line-height: 1.45; }
+.profile-status.profile-status-inactive .profile-status-text { color: var(--text-secondary); }
+.profile-actions { margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.profile-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.5rem;
+    background: var(--accent-green);
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: background 0.2s, transform 0.1s;
+}
+.profile-btn:hover { background: var(--accent-green-hover); color: #0f172a; }
+.profile-btn:active { transform: scale(0.98); }
+.profile-btn svg { flex-shrink: 0; }
+</style>
+
+<div class="profile-page">
+    <header class="profile-header">
+        <div class="profile-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h1 class="profile-title">Профиль</h1>
+    </header>
+
+    <div class="profile-card-wrap">
+        <div class="profile-row">
+            <div class="profile-row-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="profile-row-body">
+                <div class="profile-row-label">Пользователь</div>
+                <div class="profile-row-value">{{ user.username }}</div>
+            </div>
+        </div>
+        <div class="profile-row">
+            <div class="profile-row-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <div class="profile-row-body">
+                <div class="profile-row-label">Тариф</div>
+                <div class="profile-row-value">{{ profile.get_plan_display }}</div>
+            </div>
+        </div>
+        {% if profile.subscription_ends_at %}
+        <div class="profile-row">
+            <div class="profile-row-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="profile-row-body">
+                <div class="profile-row-label">Подписка до</div>
+                <div class="profile-row-value">{{ profile.subscription_ends_at|date:"d.m.Y" }}</div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="profile-link-block">
+            <a href="{% url 'game_profiles_list' %}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Игровые профили
+            </a>
+        </div>
+        {% if profile.has_active_subscription %}
+        <div class="profile-status">
+            <svg class="profile-status-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <p class="profile-status-text">У вас активная подписка: без рекламы и доступ к истории турниров.</p>
+        </div>
+        <div class="profile-actions">
+            <a href="{% url 'tournament_history' %}" class="profile-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                История турниров
+            </a>
+        </div>
+        {% else %}
+        <div class="profile-status profile-status-inactive">
+            <svg class="profile-status-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p class="profile-status-text">Оформите подписку, чтобы убрать рекламу и сохранять историю турниров.</p>
+        </div>
+        <div class="profile-actions">
+            <a href="{% url 'subscription' %}" class="profile-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Выбрать тариф
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

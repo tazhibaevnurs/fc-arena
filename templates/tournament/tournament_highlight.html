@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}{{ meta_title|default:tournament_name }}{% endblock %}
+{% block meta_description %}<meta name="description" content="{{ meta_description|default:'' }}">{% endblock %}
+{% block og_tags %}
+<meta property="og:title" content="{{ meta_title|default:tournament_name }}">
+<meta property="og:description" content="{{ meta_description|default:'' }}">
+<meta property="og:url" content="{{ og_url|default:'' }}">
+<meta property="og:type" content="website">
+{% if og_site_name %}<meta property="og:site_name" content="{{ og_site_name }}">{% endif %}
+{% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+{% if meta_title %}<meta name="twitter:title" content="{{ meta_title }}">{% endif %}
+{% if meta_description %}<meta name="twitter:description" content="{{ meta_description }}">{% endif %}
+{% if og_image %}<meta name="twitter:image" content="{{ og_image }}">{% endif %}
+{% endblock %}
+{% block content %}
+<style>
+.pub-page { max-width: 720px; margin: 0 auto; padding: 2rem 1rem; }
+.pub-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+}
+.pub-header-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.25), rgba(245, 158, 11, 0.2));
+    color: var(--accent-green);
+}
+.pub-header-title { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin: 0; font-family: 'Rajdhani', sans-serif; }
+.pub-header-desc { color: var(--text-secondary); font-size: 0.9rem; margin: 0.5rem 0 0; }
+.pub-winner-card {
+    text-align: center;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: rgba(52, 211, 153, 0.08);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    border-radius: 16px;
+}
+.pub-winner-label { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; color: var(--accent-green); font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; }
+.pub-winner-name { font-size: 1.35rem; font-weight: 700; color: white; margin: 0; }
+.pub-winner-team { color: var(--text-secondary); font-size: 1rem; margin: 0.35rem 0 0; }
+.pub-winner-logo { height: 56px; margin-top: 0.75rem; }
+.pub-winner-stats { display: flex; justify-content: center; gap: 1.25rem; margin-top: 1rem; flex-wrap: wrap; }
+.pub-winner-stat { text-align: center; }
+.pub-winner-stat-val { font-size: 1.1rem; font-weight: 700; color: var(--accent-green); }
+.pub-winner-stat-lbl { font-size: 0.75rem; color: var(--text-secondary); }
+.pub-stats-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.pub-stat-box {
+    flex: 1; min-width: 100px;
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    border-radius: 12px;
+}
+.pub-stat-box-icon { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(52, 211, 153, 0.15); color: var(--accent-green); }
+.pub-stat-box-val { font-weight: 700; color: white; }
+.pub-stat-box-lbl { font-size: 0.8rem; color: var(--text-secondary); }
+.pub-share-block {
+    margin: 2rem 0;
+    padding: 1.25rem;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+.pub-share-title { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-weight: 600; color: var(--text-primary); margin: 0 0 0.75rem; }
+.pub-share-text { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 8px; }
+.pub-share-link-wrap { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.pub-share-link-wrap input { flex: 1; min-width: 200px; padding: 0.6rem 0.75rem; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem; }
+.pub-share-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1rem; background: var(--accent-green); color: #0f172a; font-weight: 600; font-size: 0.9rem; border: none; border-radius: 8px; cursor: pointer; }
+.pub-share-btn:hover { background: var(--accent-green-hover); }
+.pub-share-btn.pub-share-btn-outline { background: transparent; color: var(--accent-green); border: 1px solid var(--accent-green); }
+.pub-share-btn.pub-share-btn-outline:hover { background: rgba(52, 211, 153, 0.15); }
+.pub-section-title { display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: var(--text-primary); }
+.pub-section-title svg { color: var(--accent-green); }
+.pub-card { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(51, 65, 85, 0.6); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+.pub-card h3 { margin: 0 0 0.75rem; font-size: 1rem; color: var(--text-secondary); }
+.pub-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.pub-table th { text-align: left; padding: 0.5rem 0.5rem 0.5rem 0; color: var(--text-secondary); font-weight: 600; }
+.pub-table td { padding: 0.5rem 0.5rem 0.5rem 0; border-bottom: 1px solid rgba(51, 65, 85, 0.4); }
+.pub-table tr:last-child td { border-bottom: none; }
+.pub-match-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid rgba(51, 65, 85, 0.4); flex-wrap: wrap; gap: 0.5rem; }
+.pub-match-row:last-child { border-bottom: none; }
+.pub-match-score { font-weight: 700; color: var(--accent-green); }
+</style>
+
+<div class="pub-page">
+    <header class="pub-header">
+        <div class="pub-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+        </div>
+        <h1 class="pub-header-title">{{ tournament_name }}</h1>
+        {% if tournament_description %}<p class="pub-header-desc">{{ tournament_description }}</p>{% endif %}
+    </header>
+
+    {% if winner %}
+    <div class="pub-winner-card">
+        <p class="pub-winner-label">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>
+            Победитель
+        </p>
+        <p class="pub-winner-name">{{ winner.name|default:winner.team_name }} — {{ winner.team_name }}</p>
+        {% if winner.logo_url %}<img src="{{ winner.logo_url }}" alt="" class="pub-winner-logo" loading="lazy">{% endif %}
+        {% if winner.points is not None or winner.wins is not None or winner.goals_for is not None %}
+        <div class="pub-winner-stats">
+            {% if winner.points is not None %}<div class="pub-winner-stat"><div class="pub-winner-stat-val">{{ winner.points }}</div><div class="pub-winner-stat-lbl">Очков</div></div>{% endif %}
+            {% if winner.wins is not None %}<div class="pub-winner-stat"><div class="pub-winner-stat-val">{{ winner.wins }}</div><div class="pub-winner-stat-lbl">Побед</div></div>{% endif %}
+            {% if winner.goals_for is not None %}<div class="pub-winner-stat"><div class="pub-winner-stat-val">{{ winner.goals_for }}</div><div class="pub-winner-stat-lbl">Голов</div></div>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="pub-stats-row">
+        <div class="pub-stat-box">
+            <div class="pub-stat-box-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div><div class="pub-stat-box-val">{{ num_participants|default:0 }}</div><div class="pub-stat-box-lbl">Участников</div></div>
+        </div>
+        <div class="pub-stat-box">
+            <div class="pub-stat-box-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+            <div><div class="pub-stat-box-val">{{ total_matches|default:0 }}</div><div class="pub-stat-box-lbl">Матчей</div></div>
+        </div>
+        <div class="pub-stat-box">
+            <div class="pub-stat-box-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></div>
+            <div><div class="pub-stat-box-val">{% if is_bracket %}Плей-офф{% else %}Круговой{% endif %}</div><div class="pub-stat-box-lbl">Тип турнира</div></div>
+        </div>
+    </div>
+
+    {% if share_url and share_text %}
+    <div class="pub-share-block">
+        <p class="pub-share-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Поделиться результатом
+        </p>
+        <p class="pub-share-text" id="pubShareText">{{ share_text }}</p>
+        <div class="pub-share-link-wrap">
+            <input type="text" id="pubShareUrl" readonly value="{{ share_url }}">
+            <button type="button" class="pub-share-btn" id="pubCopyLinkBtn">Скопировать ссылку</button>
+        </div>
+        <button type="button" class="pub-share-btn pub-share-btn-outline" id="pubShareBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Поделиться
+        </button>
+    </div>
+    {% endif %}
+
+    {% if group_blocks %}
+    <h2 class="pub-section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Группы
+    </h2>
+    {% for block in group_blocks %}
+    <div class="pub-card">
+        <h3>{{ block.group.name }}</h3>
+        <table class="pub-table">
+            <thead><tr><th>#</th><th>Участник</th><th style="text-align:right">О</th><th style="text-align:right">И</th><th style="text-align:right">В</th><th style="text-align:right">Н</th><th style="text-align:right">П</th><th style="text-align:right">Мячи</th></tr></thead>
+            <tbody>
+                {% for s in block.standings %}
+                <tr><td>{{ forloop.counter }}</td><td>{{ s.name|default:s.team_name }} ({{ s.team_name }})</td><td style="text-align:right">{{ s.points }}</td><td style="text-align:right">{{ s.games }}</td><td style="text-align:right">{{ s.wins }}</td><td style="text-align:right">{{ s.draws }}</td><td style="text-align:right">{{ s.losses }}</td><td style="text-align:right">{{ s.goals_for }} — {{ s.goals_against }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if playoff_created or round_blocks %}
+    <h2 class="pub-section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        {% if playoff_created %}Плей-офф{% else %}Туры{% endif %}
+    </h2>
+    {% for block in round_blocks %}
+    <div class="pub-card">
+        <h3>{{ block.name }}</h3>
+        {% for m in block.matches %}
+        <div class="pub-match-row">
+            <span>{% if m.home_player %}{{ m.home_player.team_name }}{% else %}—{% endif %}</span>
+            <span class="pub-match-score">{% if m.is_played %}{{ m.home_score }} — {{ m.away_score }}{% else %}—{% endif %}</span>
+            <span>{% if m.away_player %}{{ m.away_player.team_name }}{% else %}—{% endif %}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if not group_blocks and not round_blocks and standings %}
+    <h2 class="pub-section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+        Таблица
+    </h2>
+    <div class="pub-card">
+        <table class="pub-table">
+            <thead><tr><th>#</th><th>Участник</th><th style="text-align:right">О</th><th style="text-align:right">Мячи</th></tr></thead>
+            <tbody>
+                {% for s in standings %}
+                <tr><td>{{ forloop.counter }}</td><td>{{ s.name|default:s.team_name }} ({{ s.team_name }})</td><td style="text-align:right">{{ s.points }}</td><td style="text-align:right">{{ s.goals_for }} — {{ s.goals_against }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+{% if share_url %}
+<script>
+(function() {
+    var urlEl = document.getElementById('pubShareUrl');
+    var copyBtn = document.getElementById('pubCopyLinkBtn');
+    var shareBtn = document.getElementById('pubShareBtn');
+    var textEl = document.getElementById('pubShareText');
+    var shareUrl = "{{ share_url|escapejs }}";
+    var shareText = "{{ share_text|escapejs }}";
+    if (copyBtn && urlEl) {
+        copyBtn.addEventListener('click', function() {
+            navigator.clipboard.writeText(shareUrl).then(function() {
+                var t = copyBtn.textContent;
+                copyBtn.textContent = 'Скопировано';
+                setTimeout(function() { copyBtn.textContent = t; }, 2000);
+            });
+        });
+    }
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+            if (navigator.share) {
+                navigator.share({ title: document.title, text: shareText, url: shareUrl }).catch(function() { navigator.clipboard.writeText(shareUrl); });
+            } else {
+                navigator.clipboard.writeText(shareText + ' ' + shareUrl).then(function() {
+                    var t = shareBtn.textContent;
+                    shareBtn.textContent = 'Скопировано';
+                    setTimeout(function() { shareBtn.textContent = t; }, 2000);
+                });
+            }
+        });
+    }
+})();
+</script>
+{% endif %}
+{% endblock %}

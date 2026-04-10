@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block title %}Плей-офф — {{ tournament_name }}{% endblock %}
+
+{% block content %}
+<div class="tournament-page playoff-page">
+    <div class="tournament-wrap">
+        <div class="tournament-header">
+            <div class="tournament-header-left">
+                <a href="{% url 'tournament' %}" class="btn-back btn-back-playoff">← Групповой этап</a>
+                <h1 class="tournament-title" style="font-family: Rajdhani, sans-serif;">{{ tournament_name }}</h1>
+                <p class="tournament-subtitle">Плей-офф</p>
+            </div>
+            <div class="tournament-header-actions">
+                <a href="{% url 'reset' %}" class="btn-reset">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                        <path d="M3 3v5h5"></path>
+                    </svg>
+                    Сброс
+                </a>
+            </div>
+        </div>
+        {% if show_ads|default:True %}
+        <div class="ad-in-content" id="ad-mid" aria-label="Реклама" style="margin: 1rem 0;">Реклама</div>
+        {% endif %}
+        <p class="playoff-section-count">{{ playoff_played }} / {{ playoff_total }} матчей</p>
+
+        <div class="tournament-card">
+            <div class="matches-list">
+                {% for block in playoff_round_blocks %}
+                <div class="round-block">
+                    <h3 class="round-title">{{ block.name }}</h3>
+                    <div class="round-matches">
+                        {% for match in block.matches %}
+                        <div class="match-card {% if match.is_played %}played{% endif %} {% if not match.is_played and match.home_player and match.away_player %}match-card-clickable{% endif %}"
+                            {% if not match.is_played and match.home_player and match.away_player %}
+                            data-update-url="{% url 'update_match' match.id %}"
+                            data-home-name="{{ match.home_player.name }}"
+                            data-home-team="{{ match.home_player.team_name }}"
+                            data-home-color="{{ match.home_player.color }}"
+                            data-home-initial="{{ match.home_player.name|slice:':1' }}"
+                            data-home-logo="{{ match.home_player.logo_url|default:'' }}"
+                            data-away-name="{{ match.away_player.name }}"
+                            data-away-team="{{ match.away_player.team_name }}"
+                            data-away-color="{{ match.away_player.color }}"
+                            data-away-initial="{{ match.away_player.name|slice:':1' }}"
+                            data-away-logo="{{ match.away_player.logo_url|default:'' }}"
+                            data-station="{{ match.station|default:'' }}"
+                            data-notes="{{ match.notes|default:''|escape }}"
+                            {% endif %}>
+                            {% if match.station %}<div class="match-station-badge">{{ match.station }}</div>{% endif %}
+                            <div class="match-card-inner">
+                                <div class="match-team match-team-left">
+                                    <div class="match-avatar-wrap">
+                                        {% if match.home_player %}
+                                        {% if match.home_player.logo_url %}
+                                        <img src="{{ match.home_player.logo_url }}" alt="" class="match-team-logo" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                                        {% else %}
+                                        <div class="match-avatar" style="background-color: {{ match.home_player.color }}">{{ match.home_player.name|slice:":1" }}</div>
+                                        {% endif %}
+                                        {% if match.is_home %}<div class="home-badge-mini">Д</div>{% endif %}
+                                        {% else %}
+                                        <div class="match-avatar match-avatar-tbd">—</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="match-team-info min-w-0">
+                                        {% if match.home_player %}
+                                        <div class="match-team-name truncate">{{ match.home_player.name }}</div>
+                                        <div class="match-team-sub truncate">{{ match.home_player.team_name }}</div>
+                                        {% else %}
+                                        <div class="match-team-name match-team-tbd">Победитель предыдущего</div>
+                                        <div class="match-team-sub truncate">—</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="match-vs">
+                                    {% if match.is_played %}
+                                    <div class="match-score-inline">
+                                        <span>{{ match.home_score|default:0 }}</span>
+                                        <span class="score-sep">:</span>
+                                        <span>{{ match.away_score|default:0 }}</span>
+                                    </div>
+                                    {% else %}
+                                    <div class="match-vs-text">vs</div>
+                                    {% endif %}
+                                </div>
+                                <div class="match-team match-team-right">
+                                    <div class="match-team-info min-w-0 text-right">
+                                        {% if match.away_player %}
+                                        <div class="match-team-name truncate">{{ match.away_player.name }}</div>
+                                        <div class="match-team-sub truncate">{{ match.away_player.team_name }}</div>
+                                        {% else %}
+                                        <div class="match-team-name match-team-tbd">Победитель предыдущего</div>
+                                        <div class="match-team-sub truncate">—</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="match-avatar-wrap">
+                                        {% if match.away_player %}
+                                        {% if match.away_player.logo_url %}
+                                        <img src="{{ match.away_player.logo_url }}" alt="" class="match-team-logo" loading="lazy" onerror="this.onerror=null;this.style.display='none'">
+                                        {% else %}
+                                        <div class="match-avatar" style="background-color: {{ match.away_player.color }}">{{ match.away_player.name|slice:":1" }}</div>
+                                        {% endif %}
+                                        {% if not match.is_home %}<div class="home-badge-mini">Д</div>{% endif %}
+                                        {% else %}
+                                        <div class="match-avatar match-avatar-tbd">—</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Результат матча -->
+<div id="matchModal" class="match-modal-overlay" aria-hidden="true">
+    <div class="match-modal-backdrop" data-modal-close></div>
+    <div class="match-modal-box">
+        <h3 class="match-modal-title">Результат матча</h3>
+        <div class="match-modal-teams">
+            <div class="match-modal-team">
+                <div id="modalHomeAvatar" class="match-modal-avatar"></div>
+                <div id="modalHomeName" class="match-modal-name"></div>
+                <div id="modalHomeTeam" class="match-modal-team-name"></div>
+            </div>
+            <div class="match-modal-vs">VS</div>
+            <div class="match-modal-team">
+                <div id="modalAwayAvatar" class="match-modal-avatar"></div>
+                <div id="modalAwayName" class="match-modal-name"></div>
+                <div id="modalAwayTeam" class="match-modal-team-name"></div>
+            </div>
+        </div>
+        <form id="matchScoreForm" method="POST" action="" class="match-modal-form">
+            {% csrf_token %}
+            <div class="match-modal-scores">
+                <div class="match-modal-score-field">
+                    <label class="match-modal-score-label">Голы</label>
+                    <input type="number" name="home_score" id="modalHomeScore" min="0" value="0" required>
+                </div>
+                <span class="match-modal-score-sep">:</span>
+                <div class="match-modal-score-field">
+                    <label class="match-modal-score-label">Голы</label>
+                    <input type="number" name="away_score" id="modalAwayScore" min="0" value="0" required>
+                </div>
+            </div>
+            <div class="match-modal-extra">
+                <div class="match-modal-field">
+                    <label class="match-modal-extra-label">Корт / станция</label>
+                    <input type="text" name="station" id="modalStation" placeholder="Напр. Корт 1" maxlength="100">
+                </div>
+                <div class="match-modal-field">
+                    <label class="match-modal-extra-label">Заметки к матчу</label>
+                    <textarea name="notes" id="modalNotes" placeholder="Необязательно" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="match-modal-actions">
+                <button type="button" class="match-modal-btn match-modal-btn-cancel" data-modal-close>Отмена</button>
+                <button type="submit" class="match-modal-btn match-modal-btn-save">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    var modal = document.getElementById('matchModal');
+    var form = document.getElementById('matchScoreForm');
+    if (!modal || !form) return;
+
+    var currentCard = null;
+
+    function openModal(card) {
+        if (!card.dataset.updateUrl) return;
+        currentCard = card;
+        form.action = card.dataset.updateUrl;
+        var homeAvatar = document.getElementById('modalHomeAvatar');
+        var awayAvatar = document.getElementById('modalAwayAvatar');
+        if (card.dataset.homeLogo) {
+            homeAvatar.innerHTML = '<img src="' + card.dataset.homeLogo + '" alt="" class="match-modal-logo" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\'">';
+            homeAvatar.style.backgroundColor = '';
+        } else {
+            homeAvatar.innerHTML = '';
+            homeAvatar.textContent = card.dataset.homeInitial || '';
+            homeAvatar.style.backgroundColor = card.dataset.homeColor || '';
+        }
+        if (card.dataset.awayLogo) {
+            awayAvatar.innerHTML = '<img src="' + card.dataset.awayLogo + '" alt="" class="match-modal-logo" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\'">';
+            awayAvatar.style.backgroundColor = '';
+        } else {
+            awayAvatar.innerHTML = '';
+            awayAvatar.textContent = card.dataset.awayInitial || '';
+            awayAvatar.style.backgroundColor = card.dataset.awayColor || '';
+        }
+        document.getElementById('modalHomeName').textContent = card.dataset.homeName;
+        document.getElementById('modalHomeTeam').textContent = card.dataset.homeTeam;
+        document.getElementById('modalAwayName').textContent = card.dataset.awayName;
+        document.getElementById('modalAwayTeam').textContent = card.dataset.awayTeam;
+        document.getElementById('modalHomeScore').value = card.dataset.homeScore !== undefined ? card.dataset.homeScore : '0';
+        document.getElementById('modalAwayScore').value = card.dataset.awayScore !== undefined ? card.dataset.awayScore : '0';
+        document.getElementById('modalStation').value = card.dataset.station || '';
+        document.getElementById('modalNotes').value = card.dataset.notes || '';
+        modal.classList.add('match-modal-open');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal() {
+        modal.classList.remove('match-modal-open');
+        modal.setAttribute('aria-hidden', 'true');
+        currentCard = null;
+    }
+
+    function updateCardWithScore(card, data) {
+        if (!card) return;
+        var vsEl = card.querySelector('.match-vs');
+        if (vsEl) {
+            vsEl.innerHTML = '<div class="match-score-inline"><span>' + data.home_score + '</span><span class="score-sep">:</span><span>' + data.away_score + '</span></div>';
+        }
+        card.classList.add('played');
+        card.dataset.homeScore = data.home_score;
+        card.dataset.awayScore = data.away_score;
+        card.dataset.station = data.station || '';
+        card.dataset.notes = data.notes || '';
+        var stationBadge = card.querySelector('.match-station-badge');
+        if (data.station) {
+            if (!stationBadge) {
+                var inner = card.querySelector('.match-card-inner');
+                if (inner) {
+                    stationBadge = document.createElement('div');
+                    stationBadge.className = 'match-station-badge';
+                    card.insertBefore(stationBadge, inner);
+                }
+            }
+            if (stationBadge) stationBadge.textContent = data.station;
+        } else if (stationBadge) {
+            stationBadge.remove();
+        }
+        var countEl = document.querySelector('.playoff-section-count');
+        if (countEl) {
+            var m = countEl.textContent.match(/(\d+)\s*\/\s*(\d+)/);
+            if (m) {
+                var played = parseInt(m[1], 10) + 1;
+                countEl.textContent = played + ' / ' + m[2] + ' матчей';
+            }
+        }
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!form.action) return;
+        var saveBtn = form.querySelector('.match-modal-btn-save');
+        if (saveBtn) saveBtn.disabled = true;
+        var formData = new FormData(form);
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        }).then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+        .then(function(result) {
+            if (saveBtn) saveBtn.disabled = false;
+            if (result.ok && result.data.ok) {
+                updateCardWithScore(currentCard, result.data);
+                if (result.data.all_complete && result.data.redirect) {
+                    window.location.href = result.data.redirect;
+                } else {
+                    closeModal();
+                }
+            } else {
+                alert(result.data.error || 'Ошибка сохранения');
+            }
+        }).catch(function() {
+            if (saveBtn) saveBtn.disabled = false;
+            alert('Ошибка сохранения');
+        });
+    });
+
+    document.querySelectorAll('.match-card-clickable').forEach(function(card) {
+        card.addEventListener('click', function() { openModal(card); });
+    });
+
+    modal.querySelectorAll('[data-modal-close]').forEach(function(btn) {
+        btn.addEventListener('click', closeModal);
+    });
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal.querySelector('.match-modal-backdrop')) closeModal();
+    });
+})();
+</script>
+{% endblock %}

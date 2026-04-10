@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Переход к оплате — {{ provider_name }}{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 480px; margin: 3rem auto; text-align: center;">
+    <p>Перенаправление на платёжную страницу <strong>{{ provider_name }}</strong>…</p>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">Если перенаправление не сработало, нажмите кнопку ниже.</p>
+    <form id="payform" method="post" action="{{ form_action }}">
+        {% for key, value in form_data.items %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Перейти к оплате</button>
+    </form>
+</div>
+<script>
+document.getElementById('payform').submit();
+</script>
+{% endblock %}
