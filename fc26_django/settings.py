@@ -156,10 +156,14 @@ if DATABASE_URL:
             }
         }
 else:
+    # Vercel runtime filesystem is read-only except /tmp.
+    sqlite_path = BASE_DIR / 'db.sqlite3'
+    if os.environ.get('VERCEL'):
+        sqlite_path = Path('/tmp/db.sqlite3')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': sqlite_path,
         }
     }
 
